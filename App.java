@@ -12,15 +12,27 @@ abstract class ArrayTools {
 }
 class Snake {
     public Boolean alive = true;
-    public String previousDirection;
+    public Boolean win = false;
     public int points = 0;
-    private String[][] table = {{" "," "," ", " ", " ", " ", " "}, {" ","■"," ", " ", " ", " ", " "}, {" "," "," ", " ", " ", " ", " "}, {" "," "," ", " ", " ", " ", " "}, {" "," "," ", " ", " ", " ", " "}, {" "," "," ", " ", " ", " ", " "}, {" "," "," ", " ", " ", " ", " "}};
-    private final String[][] emptyTable = {{" "," "," ", " "," "," ", " "}, {" "," "," ", " "," "," ", " "}, {" "," "," ", " "," "," ", " "}, {" "," ","🍎", " "," "," ", " "}, {" "," "," ", " ", " ", " ", " "}, {" "," "," ", " ", " ", " ", " "}, {" "," "," ", " ", " ", " ", " "}};
+    private String previousDirection;
+    private String[][] table;
+    private String[][] emptyTable;
     private ArrayList<int[]> snake = new ArrayList<>();
     private int[] pointer = {1, 1};
+    private int[] gameYX;
     
-    public Snake(){
-        snake.add((new int[]{1, 1}).clone());
+    public Snake(int[] gameYX, int[] startYX, int[] firstAppleYX){
+        this.gameYX = gameYX;
+        emptyTable = new String[gameYX[0]][];
+        for (int y = 0; y < gameYX[0]; y++){
+            String[] line = new String[gameYX[1]];
+            for (int x = 0; x < gameYX[1]; x++){
+                line[x] = " ";
+            }
+            emptyTable[y] = line;
+        }
+        emptyTable[firstAppleYX[0]][firstAppleYX[1]] = "🍎";
+        snake.add((startYX).clone());
     }
 
 
@@ -35,16 +47,17 @@ class Snake {
 
         }
     }
-    public void showTable() {
-        if (alive){
+    public String[][] getTable() {
         this.reloadTable();
-        System.out.println(String.format("Pontos: %s", this.points));
-        for (String[] line : table){
-            System.out.println(Arrays.toString(line));
+        if (this.win){
+            return new String[][]{{"win"}};
         }
-        System.out.println("----------------");} else {
-            System.out.println("Você perdeu");
+        if (this.alive){
+            return table;
+        } else {
+            return new String[][]{{"lost"}};
         }
+
     }
     void move(String dir){
         this.reloadTable();
@@ -88,7 +101,7 @@ class Snake {
         }
         if(executeMove){
             boolean generateAnApple = false;
-                if(pointer[0] != -1 && pointer[0] != 7 && pointer[1] != -1 && pointer[1] != 7  ){
+                if(pointer[0] != -1 && pointer[0] != gameYX[0] && pointer[1] != -1 && pointer[1] != gameYX[1]  ){
                     if (table[pointer[0]][pointer[1]] != "🍎") {
                         snake.remove(0);
                         this.reloadTable();
@@ -119,25 +132,27 @@ class Snake {
             }
         }
         if (emptySpaces.size() == 0){
-            System.out.println("Você venceu!!");
+            win = true;
         } else {
             int randomChoice = (int) Math.floor(Math.random() * emptySpaces.size());
             emptyTable[((int[]) emptySpaces.get(randomChoice))[0]][((int[]) emptySpaces.get(randomChoice))[1]] = "🍎";
         }
-
     }
 }
 public class App {
     private static final Scanner console = new Scanner(System.in);
-    public static Snake snk = new Snake();
+    public static Snake snk = new Snake(new int[]{7, 7}, new int[]{3,1}, new int[]{3,3});
     public static void main(String[] args){
         String in;
         while (true){
-            snk = new Snake();
-        while (snk.alive){
+            snk = new Snake(new int[]{4, 4}, new int[]{3,3}, new int[]{1,2});
+        while (snk.alive && !snk.win){
             in = console.next();
             snk.move(in);
-            snk.showTable();
+            System.out.println(String.format("Pontos: %s", snk.points));
+                for (String[] line : snk.getTable()){
+                System.out.println(Arrays.toString(line));
+            }
         }}
     } 
 }
